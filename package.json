@@ -1,0 +1,20 @@
+{
+  "name": "remotion-render-endpoint",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "remotion preview src/index.tsx",
+    "render": "ts-node src/render.ts"
+  },
+  "dependencies": {
+    "@remotion/renderer": "^4.0.78",
+    "@remotion/bundler": "^4.0.78",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "ts-node": "^10.9.1"
+  }
+}

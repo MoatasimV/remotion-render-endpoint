@@ -1,0 +1,33 @@
+name: Render video
+
+on:
+  repository_dispatch:
+    types: [render-request]
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    env:
+      UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+      UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - name: Render with Remotion
+        id: render
+        run: |
+          node ./src/render.ts "${{ toJson(github.event.client_payload.options || {}) }}"
+        env:
+          PAYLOAD_JSON: ${{ toJson(github.event.client_payload.design) }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: video
+          path: output.mp4
+      - name: Update Redis status
+        run: |
+          curl -X POST "$UPSTASH_REDIS_REST_URL/set/${{ github.event.client_payload.jobId }}/video" \
+               -H "Authorization: Bearer $UPSTASH_REDIS_REST_TOKEN" \
+               -d '{"status":"COMPLETED","progress":100,"url":"https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts"}'
